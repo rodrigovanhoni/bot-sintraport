@@ -191,7 +191,7 @@
     });
 
     // Iniciar servidor
-    const port = process.env.REPLIT_PORT || process.env.PORT || 8080;
+    //const port = process.env.REPLIT_PORT || process.env.PORT || 8080;
 
 // Rota para visualizar reservas
     app.get('/reservas', (req, res) => {
