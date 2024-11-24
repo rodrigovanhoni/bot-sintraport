@@ -241,32 +241,6 @@ app.post("/api/verificar-disponibilidade", async (req, res) => {
     }
 });
 
-// Funções do banco de dados
-function verificarDisponibilidade(tipo, data) {
-    return new Promise((resolve, reject) => {
-        db.get(
-            'SELECT COUNT(*) as count FROM reservas WHERE tipo = ? AND data = ? AND status != "cancelado"',
-            [tipo, data],
-            (err, row) => {
-                if (err) reject(err);
-                else resolve(row.count === 0);
-            },
-        );
-    });
-}
-
-function salvarReserva(tipo, data, telefone) {
-    return new Promise((resolve, reject) => {
-        db.run(
-            "INSERT INTO reservas (tipo, data, telefone) VALUES (?, ?, ?)",
-            [tipo, data, telefone],
-            function (err) {
-                if (err) reject(err);
-                else resolve(this.lastID);
-            },
-        );
-    });
-}
 
 // Função para enviar mensagem
 const sendMessage = (to, message) => {
