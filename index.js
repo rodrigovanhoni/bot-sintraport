@@ -44,22 +44,16 @@ initDB();
 // Funções do banco de dados
 async function verificarDisponibilidade(tipo, data) {
     try {
-        console.log('Dados recebidos na verificação:', { tipo, data });
-
-        const query = 'SELECT COUNT(*) as count FROM reservas WHERE tipo = $1 AND data = $2 AND status != $3';
-        console.log('Query:', query);
-        console.log('Parâmetros:', [tipo, data, 'cancelado']);
-
-        const result = await pool.query(query, [tipo, data, 'cancelado']);
-        console.log('Resultado completo:', result);
-        console.log('Contagem:', result.rows[0].count);
-
+        console.log("Verificando disponibilidade:", { tipo, data });
+        const result = await pool.query(
+            "SELECT COUNT(*) as count FROM reservas WHERE tipo = $1 AND data = $2 AND status != $3",
+            [tipo, data, "cancelado"],
+        );
         const disponivel = parseInt(result.rows[0].count) === 0;
-        console.log('Está disponível?', disponivel);
-
+        console.log("Disponibilidade:", disponivel);
         return disponivel;
     } catch (error) {
-        console.error('Erro na verificação:', error);
+        console.error("Erro na verificação:", error);
         throw error;
     }
 }
@@ -232,15 +226,18 @@ app.get("/reservar", (req, res) => {
 });
 
 // Adicionar rota para API de verificação
-app.post('/api/verificar-disponibilidade', async (req, res) => {
+app.post("/api/verificar-disponibilidade", async (req, res) => {
     try {
-        console.log('Dados recebidos:', req.body);
-        const disponivel = await verificarDisponibilidade(req.body.tipo, req.body.data);
-        console.log('Resultado da verificação:', disponivel);
+        console.log("Dados recebidos:", req.body);
+        const disponivel = await verificarDisponibilidade(
+            req.body.tipo,
+            req.body.data,
+        );
+        console.log("Resultado da verificação:", disponivel);
         res.json({ disponivel });
     } catch (error) {
-        console.error('Erro na verificação:', error);
-        res.status(500).json({ error: 'Erro ao verificar disponibilidade' });
+        console.error("Erro na verificação:", error);
+        res.status(500).json({ error: "Erro ao verificar disponibilidade" });
     }
 });
 
@@ -442,16 +439,18 @@ app.post("/webhook", async (req, res) => {
 // Iniciar servidor
 //const port = process.env.REPLIT_PORT || process.env.PORT || 8080;
 
-
 // Rota para salvar reserva
-app.post('/api/salvar-reserva', async (req, res) => {
+app.post("/api/salvar-reserva", async (req, res) => {
     try {
         const { tipo, data, telefone, nome, email } = req.body;
         await salvarReserva(tipo, data, telefone, nome, email);
         res.json({ success: true });
     } catch (error) {
-        console.error('Erro ao salvar reserva:', error);
-        res.status(500).json({ success: false, error: 'Erro ao salvar reserva' });
+        console.error("Erro ao salvar reserva:", error);
+        res.status(500).json({
+            success: false,
+            error: "Erro ao salvar reserva",
+        });
     }
 });
 
