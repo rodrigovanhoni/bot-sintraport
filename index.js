@@ -43,11 +43,13 @@ initDB();
 
 // Funções do banco de dados
 async function verificarDisponibilidade(tipo, data) {
+    console.log('Verificando disponibilidade para:', tipo, data);
     const result = await pool.query(
-        "SELECT COUNT(*) as count FROM reservas WHERE tipo = $1 AND data = $2 AND status != $3",
-        [tipo, data, "cancelado"],
+        'SELECT COUNT(*) as count FROM reservas WHERE tipo = $1 AND data = $2 AND status != $3',
+        [tipo, data, 'cancelado']
     );
-    return result.rows[0].count === "0";
+    console.log('Resultado da query:', result.rows[0]);
+    return result.rows[0].count === '0';
 }
 
 async function salvarReserva(tipo, data, telefone, nome = null, email = null) {
@@ -218,17 +220,18 @@ app.get("/reservar", (req, res) => {
 });
 
 // Adicionar rota para API de verificação
-app.post("/api/verificar-disponibilidade", async (req, res) => {
+app.post('/api/verificar-disponibilidade', async (req, res) => {
     try {
-        const disponivel = await verificarDisponibilidade(
-            req.body.tipo,
-            req.body.data,
-        );
+        console.log('Dados recebidos:', req.body);
+        const disponivel = await verificarDisponibilidade(req.body.tipo, req.body.data);
+        console.log('Resultado da verificação:', disponivel);
         res.json({ disponivel });
     } catch (error) {
-        res.status(500).json({ error: "Erro ao verificar disponibilidade" });
+        console.error('Erro na verificação:', error);
+        res.status(500).json({ error: 'Erro ao verificar disponibilidade' });
     }
 });
+
 // Funções do banco de dados
 function verificarDisponibilidade(tipo, data) {
     return new Promise((resolve, reject) => {
