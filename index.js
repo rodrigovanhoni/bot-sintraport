@@ -43,13 +43,25 @@ initDB();
 
 // Funções do banco de dados
 async function verificarDisponibilidade(tipo, data) {
-    console.log('Verificando disponibilidade para:', tipo, data);
-    const result = await pool.query(
-        'SELECT COUNT(*) as count FROM reservas WHERE tipo = $1 AND data = $2 AND status != $3',
-        [tipo, data, 'cancelado']
-    );
-    console.log('Resultado da query:', result.rows[0]);
-    return result.rows[0].count === '0';
+    try {
+        console.log('Dados recebidos na verificação:', { tipo, data });
+
+        const query = 'SELECT COUNT(*) as count FROM reservas WHERE tipo = $1 AND data = $2 AND status != $3';
+        console.log('Query:', query);
+        console.log('Parâmetros:', [tipo, data, 'cancelado']);
+
+        const result = await pool.query(query, [tipo, data, 'cancelado']);
+        console.log('Resultado completo:', result);
+        console.log('Contagem:', result.rows[0].count);
+
+        const disponivel = parseInt(result.rows[0].count) === 0;
+        console.log('Está disponível?', disponivel);
+
+        return disponivel;
+    } catch (error) {
+        console.error('Erro na verificação:', error);
+        throw error;
+    }
 }
 
 async function salvarReserva(tipo, data, telefone, nome = null, email = null) {
