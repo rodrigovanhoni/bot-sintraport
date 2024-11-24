@@ -36,7 +36,126 @@
         res.send('Bot está funcionando!');
     });
 
-    // Funções do banco de dados
+    // Primeiro, vamos adicionar uma nova rota no seu index.js para servir a página
+    // Rota principal
+    app.get('/', (req, res) => {
+        res.send('Bot está funcionando!');
+    });
+
+    // Rota de reserva
+    app.get('/reservar', (req, res) => {
+        res.send(`
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+           <meta charset="UTF-8">
+           <meta name="viewport" content="width=device-width, initial-scale=1.0">
+           <title>Reservas Sintraport</title>
+           <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        </head>
+        <body>
+           <div class="container mt-5">
+               <h2 class="mb-4">Sistema de Reservas - Sintraport</h2>
+        
+               <form id="reservaForm" class="needs-validation" novalidate>
+                   <div class="mb-3">
+                       <label for="nome" class="form-label">Nome Completo</label>
+                       <input type="text" class="form-control" id="nome" required>
+                   </div>
+        
+                   <div class="mb-3">
+                       <label for="email" class="form-label">Email</label>
+                       <input type="email" class="form-control" id="email" required>
+                   </div>
+        
+                   <div class="mb-3">
+                       <label for="telefone" class="form-label">Telefone</label>
+                       <input type="tel" class="form-control" id="telefone" required>
+                   </div>
+        
+                   <div class="mb-3">
+                       <label for="tipo" class="form-label">Tipo de Reserva</label>
+                       <select class="form-select" id="tipo" required>
+                           <option value="">Selecione...</option>
+                           <option value="chacara">Chácara</option>
+                           <option value="carro">Carro para Transporte Médico</option>
+                       </select>
+                   </div>
+        
+                   <div class="mb-3">
+                       <label for="data" class="form-label">Data Desejada</label>
+                       <input type="date" class="form-control" id="data" required>
+                   </div>
+        
+                   <button type="submit" class="btn btn-primary">Verificar Disponibilidade</button>
+               </form>
+        
+               <div id="resultado" class="mt-3"></div>
+           </div>
+        
+           <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+           <script>
+           document.getElementById('reservaForm').addEventListener('submit', async (e) => {
+               e.preventDefault();
+        
+               const data = {
+                   nome: document.getElementById('nome').value,
+                   email: document.getElementById('email').value,
+                   telefone: document.getElementById('telefone').value,
+                   tipo: document.getElementById('tipo').value,
+                   data: document.getElementById('data').value
+               };
+        
+               try {
+                   const response = await fetch('/api/verificar-disponibilidade', {
+                       method: 'POST',
+                       headers: {
+                           'Content-Type': 'application/json'
+                       },
+                       body: JSON.stringify(data)
+                   });
+        
+                   const result = await response.json();
+        
+                   if (result.disponivel) {
+                       document.getElementById('resultado').innerHTML = \`
+                           <div class="alert alert-success">
+                               Data disponível! Confirma a reserva?
+                               <button onclick="confirmarReserva()" class="btn btn-success ms-3">Confirmar</button>
+                           </div>\`;
+                   } else {
+                       document.getElementById('resultado').innerHTML = \`
+                           <div class="alert alert-danger">
+                               Desculpe, data não disponível. Por favor, escolha outra data.
+                           </div>\`;
+                   }
+               } catch (error) {
+                   document.getElementById('resultado').innerHTML = \`
+                       <div class="alert alert-danger">
+                           Erro ao verificar disponibilidade. Tente novamente.
+                       </div>\`;
+               }
+           });
+        
+           async function confirmarReserva() {
+               // Implementar confirmação
+           }
+           </script>
+        </body>
+        </html>
+           `);
+        });
+        
+        // Adicionar rota para API de verificação
+        app.post('/api/verificar-disponibilidade', async (req, res) => {
+            try {
+                const disponivel = await verificarDisponibilidade(req.body.tipo, req.body.data);
+                res.json({ disponivel });
+            } catch (error) {
+                res.status(500).json({ error: 'Erro ao verificar disponibilidade' });
+            }
+        });
+// Funções do banco de dados
     function verificarDisponibilidade(tipo, data) {
         return new Promise((resolve, reject) => {
             db.get(
@@ -71,6 +190,16 @@
             to: to
         });
     };
+
+    app.post('/api/verificar-disponibilidade', async (req, res) => {
+        try {
+            const disponivel = await verificarDisponibilidade(req.body.tipo, req.body.data);
+            res.json({ disponivel });
+        } catch (error) {
+            res.status(500).json({ error: 'Erro ao verificar disponibilidade' });
+        }
+    });
+
 
     // Webhook principal
     app.post('/webhook', async (req, res) => {
